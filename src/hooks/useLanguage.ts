@@ -17,9 +17,13 @@ export const useLanguage = create<LanguageState>((set, get) => ({
   t: (key: string) => {
     const { language } = get();
     const keys = key.split('.');
-    let value = translations[language];
+    let value: any = translations[language];
     for (const k of keys) {
-      value = value?.[k];
+      if (value && typeof value === 'object') {
+        value = value[k];
+      } else {
+        return key;
+      }
     }
     return value || key;
   }
