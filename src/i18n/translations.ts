@@ -27,7 +27,9 @@ export const translations = {
       noResults: 'لا توجد نتائج',
       darkMode: 'الوضع المظلم',
       language: 'اللغة',
-      developer: 'تواصل مع المطور'
+      developer: 'تواصل مع المطور',
+      exportToExcel: ' التصدير الى ملف اكسيل ',
+      total: 'المجموع'
     }
   },
   en: {
@@ -51,7 +53,9 @@ export const translations = {
       importExcel: 'Import from Excel file',
       accountNumber: 'Account Number',
       accountName: 'Account Holder Name',
-      accountInfo: 'Account Info'
+      accountInfo: 'Account Info',
+      exportToExcel: 'Export to XLS',
+      total: 'Total'
     },
     footer: 'Designed by El-Bayaa Software'
   }

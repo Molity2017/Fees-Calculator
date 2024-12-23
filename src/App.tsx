@@ -4,6 +4,7 @@ import { Controls } from './components/Controls';
 import { CommissionInputs } from './components/CommissionInputs';
 import { useLanguage } from './hooks/useLanguage';
 import * as XLSX from 'xlsx';
+import { FileDown } from 'lucide-react';
 
 interface ResultItem {
   amount: number;
@@ -279,6 +280,110 @@ function App() {
     setExcelData([]);
   };
 
+  const handleExportToExcel = () => {
+    if (results.length === 0) return;
+
+    const workbook = XLSX.utils.book_new();
+    
+    // تحديد عناوين الأعمدة
+    const headers = [
+      t('accountNumber'),
+      t('accountName'),
+      t('amount'),
+      t('commission'),
+    ];
+
+    // تحويل البيانات إلى مصفوفة
+    const data = results.map(item => [
+      item.accountNumber,
+      item.accountName,
+      item.amount,
+      item.commission,
+    ]);
+
+    // إضافة صف المجموع
+    const totalRow = [
+      t('total'),
+      '',
+      results.reduce((sum, item) => sum + item.amount, 0),
+      results.reduce((sum, item) => sum + item.commission, 0),
+    ];
+
+    // دمج البيانات
+    const wsData = [headers, ...data, totalRow];
+
+    // إنشاء ورقة العمل
+    const worksheet = XLSX.utils.aoa_to_sheet(wsData);
+
+    // تنسيق العناوين
+    const headerStyle = {
+      font: { bold: true, color: { rgb: "FFFFFF" } },
+      fill: { fgColor: { rgb: "4A5568" } },
+      alignment: { horizontal: "center" },
+    };
+
+    // تنسيق الخلايا العددية
+    const numberStyle = {
+      alignment: { horizontal: "left" },
+      numFmt: "#,##0.00",
+    };
+
+    // تنسيق صف المجموع
+    const totalStyle = {
+      font: { bold: true },
+      fill: { fgColor: { rgb: "E2E8F0" } },
+      alignment: { horizontal: "left" },
+      numFmt: "#,##0.00",
+    };
+
+    // تطبيق التنسيقات
+    const range = XLSX.utils.decode_range(worksheet['!ref'] || 'A1:D1');
+    
+    // تنسيق العناوين
+    for (let C = range.s.c; C <= range.e.c; ++C) {
+      const address = XLSX.utils.encode_cell({ r: 0, c: C });
+      worksheet[address].s = headerStyle;
+    }
+
+    // تنسيق الأرقام في الأعمدة C و D (المبالغ والعمولات)
+    for (let R = 1; R <= range.e.r - 1; ++R) {
+      ['C', 'D'].forEach(col => {
+        const address = col + (R + 1);
+        if (worksheet[address]) {
+          worksheet[address].s = numberStyle;
+        }
+      });
+    }
+
+    // تنسيق صف المجموع
+    const lastRow = range.e.r + 1;
+    ['A', 'B', 'C', 'D'].forEach(col => {
+      const address = col + lastRow;
+      if (worksheet[address]) {
+        worksheet[address].s = totalStyle;
+      }
+    });
+
+    // تعيين عرض الأعمدة
+    const colWidths = [
+      { wch: 15 }, // رقم الحساب
+      { wch: 25 }, // اسم الحساب
+      { wch: 15 }, // المبلغ
+      { wch: 15 }, // العمولة
+    ];
+    worksheet['!cols'] = colWidths;
+
+    XLSX.utils.book_append_sheet(workbook, worksheet, t('results'));
+    
+    // تحديد اسم الملف بناءً على التاريخ الحالي
+    const now = new Date();
+    const dateStr = now.toLocaleDateString('ar-SA').replace(/\//g, '-');
+    const timeStr = now.toLocaleTimeString('ar-SA').replace(/:/g, '-');
+    const fileName = `${t('results')}_${dateStr}_${timeStr}.xlsx`;
+
+    XLSX.writeFile(workbook, fileName);
+  };
+
   return (
     <div className={`min-h-screen ${darkMode ? 'bg-gray-900' : 'bg-gradient-to-br from-blue-50 to-indigo-100'} p-6`}
          dir={isRTL ? 'rtl' : 'ltr'}>
@@ -418,7 +523,18 @@ function App() {
           </div>
         </div>
 
-        {/* زر المطور */}
+        {/* زر تصدير Excel */}
+        <div className="flex justify-center mb-4">
+          <button
+            onClick={handleExportToExcel}
+            className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-purple-500 to-indigo-600 text-white rounded-lg hover:from-purple-600 hover:to-indigo-700 transition-all shadow-md hover:shadow-lg"
+          >
+            <FileDown className="w-5 h-5" />
+            {t('exportToExcel')}
+          </button>
+        </div>
+
+        {/* زر المصمم */}
         <div className="text-center mb-4">
           <a 
             href="https://wa.me/+201015415601" 
