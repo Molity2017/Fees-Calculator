@@ -8,6 +8,7 @@ export const translations = {
       dark: 'وضع النهار'
     },
     commission: {
+      title: 'حاسبة العمولة',
       percentage: 'النسبة (%)',
       fixedAmount: 'المبلغ الثابت',
       minAmount: 'الحد الأدنى',
@@ -24,12 +25,16 @@ export const translations = {
       totalCommission: 'إجمالي العمولات',
       accountNumber: 'رقم الحساب',
       accountName: 'اسم صاحب الحساب',
+      accountInfo: 'معلومات الحساب',
+      exportToExcel: 'تصدير إلى ملف إكسل',
+      exportToPDF: 'تصدير إلى PDF',
       noResults: 'لا توجد نتائج',
       darkMode: 'الوضع المظلم',
       language: 'اللغة',
       developer: 'تواصل مع المطور',
-      exportToExcel: ' التصدير الى ملف اكسيل ',
-      total: 'المجموع'
+      total: 'المجموع',
+      calculate: 'احسب',
+      clear: 'مسح'
     }
   },
   en: {
@@ -41,6 +46,7 @@ export const translations = {
       dark: 'Light Mode'
     },
     commission: {
+      title: 'Commission Calculator',
       percentage: 'Percentage (%)',
       fixedAmount: 'Fixed Amount',
       minAmount: 'Minimum Amount',
@@ -55,7 +61,10 @@ export const translations = {
       accountName: 'Account Holder Name',
       accountInfo: 'Account Info',
       exportToExcel: 'Export to XLS',
-      total: 'Total'
+      exportToPDF: 'Export to PDF',
+      total: 'Total',
+      calculate: 'Calculate',
+      clear: 'Clear'
     },
     footer: 'Designed by El-Bayaa Software'
   }

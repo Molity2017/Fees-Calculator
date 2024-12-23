@@ -4,7 +4,8 @@ import { Controls } from './components/Controls';
 import { CommissionInputs } from './components/CommissionInputs';
 import { useLanguage } from './hooks/useLanguage';
 import * as XLSX from 'xlsx';
-import { FileDown } from 'lucide-react';
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
 
 interface ResultItem {
   amount: number;
@@ -280,33 +281,33 @@ function App() {
     setExcelData([]);
   };
 
-  const handleExportToExcel = () => {
+  const handleExportToExcel = async () => {
     if (results.length === 0) return;
 
     const workbook = XLSX.utils.book_new();
     
-    // تحديد عناوين الأعمدة
+    // تحديد عناوين الأعمدة باللغة الإنجليزية
     const headers = [
-      t('accountNumber'),
-      t('accountName'),
-      t('amount'),
-      t('commission'),
+      'Account Number',
+      'Account Name',
+      'Amount',
+      'Commission',
     ];
 
     // تحويل البيانات إلى مصفوفة
     const data = results.map(item => [
       item.accountNumber,
       item.accountName,
-      item.amount,
-      item.commission,
+      Number(item.amount.toFixed(2)),
+      Number(item.commission.toFixed(2)),
     ]);
 
     // إضافة صف المجموع
     const totalRow = [
-      t('total'),
+      'Total',
       '',
-      results.reduce((sum, item) => sum + item.amount, 0),
-      results.reduce((sum, item) => sum + item.commission, 0),
+      Number(results.reduce((sum, item) => sum + item.amount, 0).toFixed(2)),
+      Number(results.reduce((sum, item) => sum + item.commission, 0).toFixed(2)),
     ];
 
     // دمج البيانات
@@ -317,71 +318,152 @@ function App() {
 
     // تنسيق العناوين
     const headerStyle = {
-      font: { bold: true, color: { rgb: "FFFFFF" } },
-      fill: { fgColor: { rgb: "4A5568" } },
-      alignment: { horizontal: "center" },
+      font: { bold: true },
+      fill: { fgColor: { rgb: "4A5568" }, type: "pattern", patternType: "solid" },
+      alignment: { horizontal: "center", vertical: "center" },
     };
 
     // تنسيق الخلايا العددية
     const numberStyle = {
-      alignment: { horizontal: "left" },
-      numFmt: "#,##0.00",
+      numFmt: "0.00",
+      alignment: { horizontal: "right" },
     };
 
     // تنسيق صف المجموع
     const totalStyle = {
       font: { bold: true },
-      fill: { fgColor: { rgb: "E2E8F0" } },
-      alignment: { horizontal: "left" },
-      numFmt: "#,##0.00",
+      fill: { fgColor: { rgb: "E2E8F0" }, type: "pattern", patternType: "solid" },
+      alignment: { horizontal: "right" },
+      numFmt: "0.00",
     };
 
     // تطبيق التنسيقات
-    const range = XLSX.utils.decode_range(worksheet['!ref'] || 'A1:D1');
-    
-    // تنسيق العناوين
-    for (let C = range.s.c; C <= range.e.c; ++C) {
-      const address = XLSX.utils.encode_cell({ r: 0, c: C });
-      worksheet[address].s = headerStyle;
-    }
+    ["A1", "B1", "C1", "D1"].forEach(cell => {
+      if (!worksheet[cell]) worksheet[cell] = {};
+      worksheet[cell].s = headerStyle;
+    });
 
-    // تنسيق الأرقام في الأعمدة C و D (المبالغ والعمولات)
-    for (let R = 1; R <= range.e.r - 1; ++R) {
+    // تنسيق الأرقام في الأعمدة C و D
+    for (let i = 2; i <= data.length + 1; i++) {
       ['C', 'D'].forEach(col => {
-        const address = col + (R + 1);
-        if (worksheet[address]) {
-          worksheet[address].s = numberStyle;
-        }
+        const cell = `${col}${i}`;
+        if (!worksheet[cell]) worksheet[cell] = {};
+        worksheet[cell].s = numberStyle;
       });
     }
 
     // تنسيق صف المجموع
-    const lastRow = range.e.r + 1;
-    ['A', 'B', 'C', 'D'].forEach(col => {
-      const address = col + lastRow;
-      if (worksheet[address]) {
-        worksheet[address].s = totalStyle;
-      }
+    const lastRow = data.length + 2;
+    ["A", "B", "C", "D"].forEach(col => {
+      const cell = `${col}${lastRow}`;
+      if (!worksheet[cell]) worksheet[cell] = {};
+      worksheet[cell].s = totalStyle;
     });
 
     // تعيين عرض الأعمدة
-    const colWidths = [
-      { wch: 15 }, // رقم الحساب
-      { wch: 25 }, // اسم الحساب
+    worksheet['!cols'] = [
+      { wch: 20 }, // رقم الحساب
+      { wch: 30 }, // اسم الحساب
       { wch: 15 }, // المبلغ
       { wch: 15 }, // العمولة
     ];
-    worksheet['!cols'] = colWidths;
 
-    XLSX.utils.book_append_sheet(workbook, worksheet, t('results'));
-    
-    // تحديد اسم الملف بناءً على التاريخ الحالي
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Results');
+
+    // تحديد اسم الملف
     const now = new Date();
     const dateStr = now.toLocaleDateString('ar-SA').replace(/\//g, '-');
     const timeStr = now.toLocaleTimeString('ar-SA').replace(/:/g, '-');
-    const fileName = `${t('results')}_${dateStr}_${timeStr}.xlsx`;
+    const fileName = `Results_${dateStr}_${timeStr}.xlsx`;
 
-    XLSX.writeFile(workbook, fileName);
+    // تحويل الملف إلى Blob
+    const wbout = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+    const blob = new Blob([wbout], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+
+    try {
+      // محاولة استخدام File System Access API
+      const handle = await window.showSaveFilePicker({
+        suggestedName: fileName,
+        types: [{
+          description: 'Excel Files',
+          accept: {
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': ['.xlsx']
+          }
+        }]
+      });
+      const writable = await handle.createWritable();
+      await writable.write(blob);
+      await writable.close();
+    } catch (err) {
+      // إذا فشل File System Access API، نستخدم طريقة بديلة
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      document.body.appendChild(a);
+      a.style.display = 'none';
+      a.href = url;
+      a.download = fileName;
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    }
+  };
+
+  const handleExportToPDF = () => {
+    if (results.length === 0) return;
+
+    // إنشاء مستند PDF جديد
+    const doc = new jsPDF();
+
+    // تحويل البيانات إلى تنسيق الجدول
+    const tableData = results.map(item => [
+      item.accountNumber,
+      item.accountName,
+      Number(item.amount.toFixed(2)),
+      Number(item.commission.toFixed(2)),
+    ]);
+
+    // حساب المجاميع
+    const totalAmount = Number(results.reduce((sum, item) => sum + item.amount, 0).toFixed(2));
+    const totalCommission = Number(results.reduce((sum, item) => sum + item.commission, 0).toFixed(2));
+
+    doc.autoTable({
+      head: [['Account Number', 'Account Name', 'Amount', 'Commission']],
+      body: tableData,
+      theme: 'grid',
+      headStyles: {
+        fillColor: [74, 85, 104],
+        textColor: [255, 255, 255],
+        fontStyle: 'bold',
+      },
+      columnStyles: {
+        0: { cellWidth: 40 },
+        1: { cellWidth: 60 },
+        2: { cellWidth: 40, halign: 'right' },
+        3: { cellWidth: 40, halign: 'right' },
+      },
+      foot: [['Total', '', totalAmount, totalCommission]],
+      footStyles: {
+        fillColor: [226, 232, 240],
+        textColor: [0, 0, 0],
+        fontStyle: 'bold',
+      },
+      didDrawCell: (data: { row: { index: number } }) => {
+        // تنسيق خاص لصف المجموع
+        if (data.row.index === tableData.length - 1) {
+          doc.setFillColor(226, 232, 240);
+          doc.setTextColor(0, 0, 0);
+        }
+      },
+    });
+
+    // تحديد اسم الملف
+    const now = new Date();
+    const dateStr = now.toLocaleDateString('ar-SA').replace(/\//g, '-');
+    const timeStr = now.toLocaleTimeString('ar-SA').replace(/:/g, '-');
+    const fileName = `Results_${dateStr}_${timeStr}.pdf`;
+
+    // حفظ الملف
+    doc.save(fileName);
   };
 
   return (
@@ -523,26 +605,31 @@ function App() {
           </div>
         </div>
 
-        {/* زر تصدير Excel */}
-        <div className="flex justify-center mb-4">
+        {/* أزرار التصدير */}
+        <div className="flex justify-center gap-4 mt-4">
+          <button
+            onClick={handleExportToPDF}
+            className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-6 py-2 rounded-md hover:from-purple-700 hover:to-indigo-700 transition-all"
+          >
+            {t('commission.exportToPDF')}
+          </button>
           <button
             onClick={handleExportToExcel}
-            className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-purple-500 to-indigo-600 text-white rounded-lg hover:from-purple-600 hover:to-indigo-700 transition-all shadow-md hover:shadow-lg"
+            className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-6 py-2 rounded-md hover:from-purple-700 hover:to-indigo-700 transition-all"
           >
-            <FileDown className="w-5 h-5" />
-            {t('exportToExcel')}
+            {t('commission.exportToExcel')}
           </button>
         </div>
 
-        {/* زر المصمم */}
-        <div className="text-center mb-4">
-          <a 
-            href="https://wa.me/+201015415601" 
-            target="_blank" 
-            rel="noopener noreferrer" 
-            className="inline-block bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-6 py-2 rounded-lg transition-all duration-200 ease-in-out shadow-md hover:shadow-lg transform hover:-translate-y-0.5 font-bold"
+        {/* زر المطور */}
+        <div className="flex justify-center mt-4">
+          <a
+            href="https://w.ma/+201015415601"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="bg-gradient-to-r from-green-500 to-emerald-500 text-white px-6 py-2 rounded-md hover:from-green-600 hover:to-emerald-600 transition-all inline-block"
           >
-            تواصل مع المطور
+            {t('تواصل مع المطور')}
           </a>
         </div>
 
