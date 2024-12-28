@@ -29,7 +29,6 @@ function App() {
   const [amounts, setAmounts] = useState<string>('');
   const [results, setResults] = useState<ResultItem[]>([]);
   const [excelData, setExcelData] = useState<ExcelDataItem[]>([]);
-  const [, setSelectedAmount] = useState<number | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedResult, setSelectedResult] = useState<ResultItem | null>(null);
   const [showModal, setShowModal] = useState(false);
@@ -93,7 +92,6 @@ function App() {
   const handleResultClick = useCallback((result: ResultItem) => {
     setSelectedResult(result);
     setShowModal(true);
-    setSelectedAmount(result.amount);
   }, []);
 
   const handleTextareaSelect = useCallback((e: React.SyntheticEvent<HTMLTextAreaElement>) => {
@@ -101,7 +99,6 @@ function App() {
     const selectedText = target.value.substring(target.selectionStart, target.selectionEnd);
     const amount = parseFloat(selectedText.trim());
     if (!isNaN(amount)) {
-      setSelectedAmount(amount);
       scrollToResult(amount);
     }
   }, [scrollToResult]);
@@ -167,7 +164,6 @@ function App() {
             value={amounts}
             onChange={(value) => {
               setAmounts(value);
-              setSelectedAmount(null);
             }}
             onSelect={handleTextareaSelect}
             placeholder={t('commission.amountsPlaceholder')}
