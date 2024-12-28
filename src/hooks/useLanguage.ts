@@ -9,11 +9,19 @@ interface LanguageState {
   t: (key: string) => string;
 }
 
+// Get saved language from localStorage or default to 'ar'
+const getSavedLanguage = (): Language => {
+  const saved = localStorage.getItem('language');
+  return (saved === 'ar' || saved === 'en') ? saved : 'ar';
+};
+
 export const useLanguage = create<LanguageState>((set, get) => ({
-  language: 'ar',
-  toggleLanguage: () => set(state => ({ 
-    language: state.language === 'ar' ? 'en' : 'ar' 
-  })),
+  language: getSavedLanguage(),
+  toggleLanguage: () => set(state => {
+    const newLanguage = state.language === 'ar' ? 'en' : 'ar';
+    localStorage.setItem('language', newLanguage);
+    return { language: newLanguage };
+  }),
   t: (key: string) => {
     const { language } = get();
     const keys = key.split('.');
