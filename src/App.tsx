@@ -30,6 +30,7 @@ function App() {
   const [results, setResults] = useState<ResultItem[]>([]);
   const [excelData, setExcelData] = useState<ExcelDataItem[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
   const [selectedResult, setSelectedResult] = useState<ResultItem | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [pdfSettings, setPdfSettings] = useState<PDFSettings>({
@@ -39,6 +40,16 @@ function App() {
   const [showPdfSettings, setShowPdfSettings] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // Debounce search query
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchQuery(searchQuery);
+    }, 300); // 300ms delay
+
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
@@ -104,14 +115,15 @@ function App() {
   }, [scrollToResult]);
 
   const filteredResults = useMemo(() => {
-    if (!searchQuery) return results;
+    if (!debouncedSearchQuery) return results;
+    const query = debouncedSearchQuery.toLowerCase();
     return results.filter(result => 
-      result.amount.toString().includes(searchQuery) ||
-      result.commission.toString().includes(searchQuery) ||
-      (result.accountNumber && result.accountNumber.toLowerCase().includes(searchQuery.toLowerCase())) ||
-      (result.accountName && result.accountName.toLowerCase().includes(searchQuery.toLowerCase()))
+      result.amount.toString().includes(query) ||
+      result.commission.toString().includes(query) ||
+      (result.accountNumber && result.accountNumber.toLowerCase().includes(query)) ||
+      (result.accountName && result.accountName.toLowerCase().includes(query))
     );
-  }, [results, searchQuery]);
+  }, [results, debouncedSearchQuery]);
 
   const totals = useMemo(() => {
     return results.reduce((acc, result) => ({
