@@ -10,6 +10,7 @@ import { ExportButton } from './components/ExportButton';
 import { FileUploadSection } from './components/FileUploadSection';
 import { InputSection } from './components/InputSection';
 import { DeveloperButton } from './components/DeveloperButton';
+import { ErrorModal } from './components/modals/ErrorModal';
 import { useLanguage } from './hooks/useLanguage';
 import { ResultItem, ExcelDataItem, PDFSettings } from './types/types';
 import { processExcelData } from './utils/ExcelUtils';
@@ -38,6 +39,7 @@ function App() {
     companyLogo: null
   });
   const [showPdfSettings, setShowPdfSettings] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string>('');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -79,8 +81,15 @@ function App() {
   const calculateResults = useCallback(() => {
     const config = { percentage, fixedAmount, minAmount, maxAmount };
     const results = calculateCommissions(amounts, config, excelData);
+    
+    // إذا لم تكن هناك نتائج ولكن هناك مدخلات، فهذا يعني وجود خطأ
+    if (results.length === 0 && amounts.trim()) {
+      setErrorMessage(t('errors.invalidInputs'));
+      return;
+    }
+    
     setResults(results);
-  }, [amounts, percentage, fixedAmount, minAmount, maxAmount, excelData]);
+  }, [amounts, percentage, fixedAmount, minAmount, maxAmount, excelData, t]);
 
   useEffect(() => {
     calculateResults();
@@ -228,6 +237,13 @@ function App() {
               setShowPdfSettings(false);
             }}
             onClose={() => setShowPdfSettings(false)}
+          />
+        )}
+
+        {errorMessage && (
+          <ErrorModal
+            message={errorMessage}
+            onClose={() => setErrorMessage('')}
           />
         )}
       </div>

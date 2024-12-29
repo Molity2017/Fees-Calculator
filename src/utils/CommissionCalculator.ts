@@ -7,33 +7,96 @@ interface CommissionConfig {
   maxAmount: string;
 }
 
+type ValidationError = {
+  type: 'NEGATIVE_AMOUNT' | 'INVALID_PERCENTAGE' | 'INVALID_FIXED_AMOUNT' | 'INVALID_MIN_AMOUNT' | 'INVALID_MAX_AMOUNT';
+  message: string;
+};
+
+/**
+ * Validates the commission configuration and amount.
+ * 
+ * @param amount The amount to validate
+ * @param config The commission configuration to validate
+ * @returns An error object if validation fails, null otherwise
+ */
+function validateCommissionInput(amount: number, config: CommissionConfig): ValidationError | null {
+  if (amount < 0) {
+    return {
+      type: 'NEGATIVE_AMOUNT',
+      message: 'Amount cannot be negative'
+    };
+  }
+
+  const percentage = Number(config.percentage);
+  if (isNaN(percentage) || percentage < 0 || percentage > 100) {
+    return {
+      type: 'INVALID_PERCENTAGE',
+      message: 'Percentage must be between 0 and 100'
+    };
+  }
+
+  const fixedAmount = Number(config.fixedAmount);
+  if (config.fixedAmount && (isNaN(fixedAmount) || fixedAmount < 0)) {
+    return {
+      type: 'INVALID_FIXED_AMOUNT',
+      message: 'Fixed amount must be a positive number'
+    };
+  }
+
+  const minAmount = Number(config.minAmount);
+  if (config.minAmount && (isNaN(minAmount) || minAmount < 0)) {
+    return {
+      type: 'INVALID_MIN_AMOUNT',
+      message: 'Minimum amount must be a positive number'
+    };
+  }
+
+  const maxAmount = Number(config.maxAmount);
+  if (config.maxAmount && (isNaN(maxAmount) || maxAmount < 0)) {
+    return {
+      type: 'INVALID_MAX_AMOUNT',
+      message: 'Maximum amount must be a positive number'
+    };
+  }
+
+  if (config.minAmount && config.maxAmount && minAmount > maxAmount) {
+    return {
+      type: 'INVALID_MIN_AMOUNT',
+      message: 'Minimum amount cannot be greater than maximum amount'
+    };
+  }
+
+  return null;
+}
+
 /**
  * Calculates the commission based on the given amount and configuration.
  * 
- * @param amount The amount to calculate the commission for.
- * @param config The commission configuration.
- * @returns The calculated commission result.
+ * @param amount The amount to calculate the commission for
+ * @param config The commission configuration
+ * @returns The calculated commission result or null if validation fails
  */
-export function calculateCommission(amount: number, config: CommissionConfig): ResultItem {
-  const { percentage, fixedAmount, minAmount, maxAmount } = config;
-  
-  // Calculate the commission based on the percentage
-  let commission = amount * (Number(percentage) / 100);
-  
-  // Apply the minimum and maximum limits to the commission
-  if (minAmount && commission < Number(minAmount)) {
-    commission = Number(minAmount);
-  }
-  if (maxAmount && commission > Number(maxAmount)) {
-    commission = Number(maxAmount);
+export function calculateCommission(amount: number, config: CommissionConfig): ResultItem | null {
+  // Validate input
+  const validationError = validateCommissionInput(amount, config);
+  if (validationError) {
+    console.error('Validation error:', validationError.message);
+    return null;
   }
 
-  // Add the fixed amount to the commission
-  if (fixedAmount) {
-    commission += Number(fixedAmount);
-  }
+  // Convert config values to numbers once
+  const percentage = Number(config.percentage);
+  const fixedAmount = config.fixedAmount ? Number(config.fixedAmount) : 0;
+  const minAmount = config.minAmount ? Number(config.minAmount) : -Infinity;
+  const maxAmount = config.maxAmount ? Number(config.maxAmount) : Infinity;
+  
+  // Calculate base commission
+  let commission = amount * (percentage / 100);
+  
+  // Apply limits and fixed amount
+  commission = Math.max(minAmount, Math.min(maxAmount, commission));
+  commission += fixedAmount;
 
-  // Return the calculated commission result
   return {
     amount,
     commission,
@@ -45,37 +108,42 @@ export function calculateCommission(amount: number, config: CommissionConfig): R
 /**
  * Calculates the commissions for multiple amounts based on the given configuration and Excel data.
  * 
- * @param amounts The amounts to calculate the commissions for, separated by newline characters.
- * @param config The commission configuration.
- * @param excelData The Excel data to use for account information.
- * @returns The calculated commission results.
+ * @param amounts The amounts string, with each amount on a new line
+ * @param config The commission configuration
+ * @param excelData Optional Excel data for account information
+ * @returns Array of calculated commission results
  */
 export function calculateCommissions(
   amounts: string,
   config: CommissionConfig,
-  excelData: ExcelDataItem[]
+  excelData: ExcelDataItem[] = []
 ): ResultItem[] {
-  // Split the amounts into individual lines and filter out empty lines
-  const lines = amounts.split('\n').filter(line => line.trim());
+  // Split and clean the input
+  const lines = amounts
+    .split('\n')
+    .map(line => line.trim())
+    .filter(Boolean);
   
-  // Calculate the commission for each amount and map the results
-  return lines.map((line, index) => {
-    // Parse the amount from the line
-    const amount = parseFloat(line);
-    if (isNaN(amount)) return null;
+  // Process each line
+  return lines
+    .map((line, index) => {
+      const amount = parseFloat(line);
+      if (isNaN(amount)) {
+        console.warn(`Invalid amount on line ${index + 1}: "${line}"`);
+        return null;
+      }
 
-    // Calculate the commission for the amount
-    const result = calculateCommission(amount, config);
-    const currentExcelData = excelData[index];
+      const result = calculateCommission(amount, config);
+      if (!result) return null;
 
-    // Add account information from the Excel data if available
-    if (currentExcelData) {
-      result.accountNumber = currentExcelData.accountNumber || '';
-      result.accountName = currentExcelData.accountName || '';
-    }
+      // Add account information if available
+      const currentExcelData = excelData[index];
+      if (currentExcelData) {
+        result.accountNumber = currentExcelData.accountNumber || '';
+        result.accountName = currentExcelData.accountName || '';
+      }
 
-    // Return the calculated commission result
-    return result;
-  // Filter out null results
-  }).filter((result): result is ResultItem => result !== null);
+      return result;
+    })
+    .filter((result): result is ResultItem => result !== null);
 }

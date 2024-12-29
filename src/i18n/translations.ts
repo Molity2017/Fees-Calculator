@@ -63,6 +63,15 @@ export const translations = {
       close: 'إغلاق',
       save: 'حفظ',
       cancel: 'إلغاء'
+    },
+    errors: {
+      invalidInputs: 'يوجد خطأ في المدخلات. تأكد من:\n- المبالغ موجبة\n- النسبة المئوية بين 0 و 100\n- المبالغ الثابتة موجبة\n- الحد الأدنى أقل من الحد الأقصى',
+      negativeAmount: 'المبلغ لا يمكن أن يكون سالباً',
+      invalidPercentage: 'النسبة المئوية يجب أن تكون بين 0 و 100',
+      invalidFixedAmount: 'المبلغ الثابت يجب أن يكون موجباً',
+      invalidMinAmount: 'الحد الأدنى يجب أن يكون موجباً',
+      invalidMaxAmount: 'الحد الأقصى يجب أن يكون موجباً',
+      minGreaterThanMax: 'الحد الأدنى لا يمكن أن يكون أكبر من الحد الأقصى'
     }
   },
   en: {
@@ -129,6 +138,15 @@ export const translations = {
       close: 'Close',
       save: 'Save',
       cancel: 'Cancel'
+    },
+    errors: {
+      invalidInputs: 'Invalid inputs. Please check:\n- Amounts are positive\n- Percentage is between 0 and 100\n- Fixed amounts are positive\n- Minimum is less than maximum',
+      negativeAmount: 'Amount cannot be negative',
+      invalidPercentage: 'Percentage must be between 0 and 100',
+      invalidFixedAmount: 'Fixed amount must be positive',
+      invalidMinAmount: 'Minimum amount must be positive',
+      invalidMaxAmount: 'Maximum amount must be positive',
+      minGreaterThanMax: 'Minimum amount cannot be greater than maximum amount'
     }
   }
 };
