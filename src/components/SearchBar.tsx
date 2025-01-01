@@ -11,13 +11,13 @@ interface SearchBarProps {
   setSearchType: (type: SearchType) => void;
 }
 
-export function SearchBar({ 
-  searchQuery, 
-  setSearchQuery, 
+export function SearchBar({
+  searchQuery,
+  setSearchQuery,
   placeholder,
   searchType,
   setSearchType
-}: SearchBarProps) {
+}: SearchBarProps): React.JSX.Element {
   const { t, language } = useLanguage();
   const isRTL = language === 'ar';
 
@@ -36,8 +36,8 @@ export function SearchBar({
           <button
             onClick={() => setSearchQuery('')}
             className="absolute inset-y-0 flex items-center cursor-pointer text-gray-400 hover:text-gray-600"
-            style={{ 
-              right: isRTL ? 'auto' : '0.5rem', 
+            style={{
+              right: isRTL ? 'auto' : '0.5rem',
               left: isRTL ? '0.5rem' : 'auto'
             }}
           >
