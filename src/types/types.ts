@@ -10,6 +10,8 @@ export interface ExcelDataItem {
   accountName?: string;
 }
 
+export type SearchType = 'amount' | 'accountNumber' | 'accountName';
+
 export interface PDFSettings {
   companyName: string;
   companyLogo: string | null;

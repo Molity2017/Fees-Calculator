@@ -9,7 +9,7 @@ export const translations = {
     },
     commission: {
       title: 'حاسبة العمولات',
-      percentage: 'النسبة المئوية (%)',
+      percentage: 'النسبة المئوية',
       fixedAmount: 'المبلغ الثابت',
       minAmount: 'الحد الأدنى',
       maxAmount: 'الحد الأقصى',

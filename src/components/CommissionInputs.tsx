@@ -39,7 +39,7 @@ export function CommissionInputs({
   };
 
   return (
-    <div className="grid grid-cols-4 gap-6 mb-8" dir={isRTL ? 'rtl' : 'ltr'}>
+    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 mb-8" dir={isRTL ? 'rtl' : 'ltr'}>
       <CommissionInput
         label={t('commission.percentage')}
         value={percentage}
@@ -47,8 +47,8 @@ export function CommissionInputs({
         active={activeInputs.percentage}
         onActiveChange={(value) => handleActiveChange('percentage', value)}
         placeholder="2.5"
+        symbol="%"
       />
-
       <CommissionInput
         label={t('commission.fixedAmount')}
         value={fixedAmount}
@@ -56,8 +56,8 @@ export function CommissionInputs({
         active={activeInputs.fixedAmount}
         onActiveChange={(value) => handleActiveChange('fixedAmount', value)}
         placeholder="50"
+        symbol="$"
       />
-
       <CommissionInput
         label={t('commission.minAmount')}
         value={minAmount}
@@ -65,8 +65,8 @@ export function CommissionInputs({
         active={activeInputs.minAmount}
         onActiveChange={(value) => handleActiveChange('minAmount', value)}
         placeholder="10"
+        symbol="↓"
       />
-
       <CommissionInput
         label={t('commission.maxAmount')}
         value={maxAmount}
@@ -74,6 +74,7 @@ export function CommissionInputs({
         active={activeInputs.maxAmount}
         onActiveChange={(value) => handleActiveChange('maxAmount', value)}
         placeholder="100"
+        symbol="↑"
       />
     </div>
   );
