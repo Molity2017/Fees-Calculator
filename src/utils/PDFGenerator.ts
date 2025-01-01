@@ -22,42 +22,43 @@ export function generatePDF({ results, totals, settings }: GeneratePDFParams): s
     // الحالة الأولى: إضافة اسم الشركة والشعار معاً
     // يتم عرض الشعار على اليمين مع اسم الشركة بجانبه وخط تحته ثم العنوان الفرعي
     if (settings.companyLogo && settings.companyName) {
-      // تحديد حجم الشعار وحساب المسافات
-      const titleHeight = 35;  // ارتفاع المنطقة العلوية
-      const logoSize = titleHeight;  // جعل حجم الشعار مساوياً للارتفاع
+      // أبعاد الشعار
+      const logoWidth = 25;   // عرض الشعار
+      const logoHeight = 22;  // ارتفاع الشعار
+      const logoMarginTop = 15;  // المسافة من أعلى للشعار فقط
       const companyName = settings.companyName;
       // حساب العرض الكلي (الشعار + مسافة + النص) لوضعه في المنتصف
-      const totalWidth = logoSize + 1 + doc.getTextWidth(companyName);
+      const totalWidth = logoWidth + 1 + doc.getTextWidth(companyName);
       const startX = (pageWidth - totalWidth) / 2;
 
       // إضافة الشعار في أقصى اليمين من المنطقة المحسوبة
-      doc.addImage(settings.companyLogo as string, 'PNG', startX, margin, logoSize, logoSize);
+      doc.addImage(settings.companyLogo as string, 'PNG', startX, logoMarginTop, logoWidth, logoHeight);
 
       // حساب موضع بداية النص (بعد الشعار مباشرة)
-      const textX = startX + logoSize + 1;
+      const textX = startX + logoWidth + 1;
 
       // كتابة اسم الشركة بخط عريض وحجم 16
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(16);
       doc.setTextColor(44, 62, 80);
-      doc.text(companyName, textX, margin + 15);
+      doc.text(companyName, textX, logoMarginTop + 8);
 
       // إضافة خط تحت اسم الشركة للتأكيد عليه
       const titleWidth = doc.getTextWidth(companyName);
       doc.setDrawColor(44, 62, 80);
       doc.setLineWidth(0.6);
-      doc.line(textX, margin + 19, textX + titleWidth, margin + 19);
+      doc.line(textX, logoMarginTop + 12, textX + titleWidth, logoMarginTop + 12);
 
       // إضافة العنوان الفرعي بخط عادي وحجم أصغر
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(12);
-      doc.text('Final Data Report with Commissions', textX, margin + 25);
+      doc.text('Final Data Report with Commissions', textX, logoMarginTop + 18.5);
     }
     // الحالة الثانية: إضافة الشعار فقط
     // يتم عرض الشعار في المنتصف ثم العنوان الفرعي تحته
     else if (settings.companyLogo) {
       // إضافة الشعار في منتصف الصفحة بحجم أصغر من الحالة الأولى
-      const logoSize = 30;  // حجم ثابت للشعار
+      const logoSize = 25;  // حجم ثابت للشعار
       const logoX = (pageWidth - logoSize) / 2;  // حساب نقطة البداية لتوسيط الشعار
       doc.addImage(settings.companyLogo as string, 'PNG', logoX, margin, logoSize, logoSize);
 
@@ -67,7 +68,7 @@ export function generatePDF({ results, totals, settings }: GeneratePDFParams): s
       doc.setTextColor(44, 62, 80);
       const subtitle = 'Final Data Report with Commissions';
       const subtitleWidth = doc.getTextWidth(subtitle);
-      doc.text(subtitle, (pageWidth - subtitleWidth) / 2, margin + 32);
+      doc.text(subtitle, (pageWidth - subtitleWidth) / 2, margin + 28);
     }
     // الحالة الثالثة: إضافة اسم الشركة فقط
     // يتم عرض اسم الشركة في المنتصف مع خط تحته ثم العنوان الفرعي
@@ -91,18 +92,23 @@ export function generatePDF({ results, totals, settings }: GeneratePDFParams): s
       doc.setFontSize(14);
       const subtitle = 'Final Data Report with Commissions';
       const subtitleWidth = doc.getTextWidth(subtitle);
-      doc.text(subtitle, (pageWidth - subtitleWidth) / 2, margin + 25);
+      doc.text(subtitle, (pageWidth - subtitleWidth) / 2, margin + 27);
     }
     // الحالة الرابعة: بدون اسم شركة أو شعار
     // يتم عرض العنوان الفرعي فقط في المنتصف
     else {
-      // إضافة العنوان الفرعي فقط بخط عريض وحجم 14
+      // إضافة العنوان الفرعي فقط بخط عريض وحجم 16
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(14);
       doc.setTextColor(44, 62, 80);
       const subtitle = 'Final Data Report with Commissions';
       const subtitleWidth = doc.getTextWidth(subtitle);
-      doc.text(subtitle, (pageWidth - subtitleWidth) / 2, margin + 16);
+      doc.text(subtitle, (pageWidth - subtitleWidth) / 2, margin + 13);
+
+      // إضافة خط تحت العنوان
+      doc.setDrawColor(44, 62, 80);
+      doc.setLineWidth(0.6);
+      doc.line((pageWidth - subtitleWidth) / 2, margin + 16, (pageWidth - subtitleWidth) / 2 + subtitleWidth, margin + 16);
     }
 
     // تحديد موضع بداية الجدول بناءً على الحالة
