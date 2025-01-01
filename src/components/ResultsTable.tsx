@@ -1,4 +1,5 @@
 import { useLanguage } from '../hooks/useLanguage';
+import { formatNumber } from '../utils/formatNumber';
 
 interface ResultItem {
   amount: number;
@@ -16,15 +17,8 @@ export function ResultsTable({ results, onResultClick }: ResultsTableProps) {
   const { t, language } = useLanguage();
   const isRTL = language === 'ar';
 
-  const formatNumber = (num: number) => {
-    return num.toLocaleString('en-US', { 
-      minimumFractionDigits: 2, 
-      maximumFractionDigits: 2 
-    });
-  };
-
   return (
-    <div className="bg-blue-50 rounded-xl p-4 divide-y divide-blue-100 h-[400px] overflow-y-auto results-container">
+    <div className="bg-blue-50 rounded-xl p-4 divide-y divide-blue-100 h-[400px] sm:h-[400px] overflow-y-auto results-container">
       {results.map((result, index) => (
         <div 
           key={index}

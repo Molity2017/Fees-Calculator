@@ -1,6 +1,7 @@
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import { PDFSettings, ResultItem } from '../types/types';
+import { formatPDFNumber } from './formatNumber';
 
 interface GeneratePDFParams {
   results: ResultItem[];
@@ -66,7 +67,7 @@ export function generatePDF({ results, totals, settings }: GeneratePDFParams): s
       doc.setTextColor(44, 62, 80);
       const subtitle = 'Final Data Report with Commissions';
       const subtitleWidth = doc.getTextWidth(subtitle);
-      doc.text(subtitle, (pageWidth - subtitleWidth) / 2, margin + 28);
+      doc.text(subtitle, (pageWidth - subtitleWidth) / 2, margin + 32);
     }
     // الحالة الثالثة: إضافة اسم الشركة فقط
     // يتم عرض اسم الشركة في المنتصف مع خط تحته ثم العنوان الفرعي
@@ -117,7 +118,7 @@ export function generatePDF({ results, totals, settings }: GeneratePDFParams): s
 
     const y = tableStartY - 3;
     const transfersText = `Number of Transfers: ${results.length}`;
-    const totalText = `Total Amount & Commission: ${grandTotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    const totalText = `Total Amount & Commission: ${formatPDFNumber(grandTotal)}`;
 
     doc.text(transfersText, margin + 10, y);
     doc.text(totalText, (pageWidth - doc.getTextWidth(totalText)) / 2, y);
@@ -129,19 +130,24 @@ export function generatePDF({ results, totals, settings }: GeneratePDFParams): s
 
     (doc as any).autoTable({
       head: [[
-        { content: 'ID', styles: { halign: 'center' } },
-        { content: 'Account Number', styles: { halign: 'center' } },
-        { content: 'Account Name', styles: { halign: 'center' } },
-        { content: 'Amount', styles: { halign: 'left' } },
-        { content: 'Fees', styles: { halign: 'left' } }
+        { content: 'ID', styles: { halign: 'center', fillColor: [44, 62, 80], textColor: [255, 255, 255] } },
+        { content: 'Account Number', styles: { halign: 'center', fillColor: [44, 62, 80], textColor: [255, 255, 255] } },
+        { content: 'Account Name', styles: { halign: 'center', fillColor: [44, 62, 80], textColor: [255, 255, 255] } },
+        { content: 'Amount', styles: { halign: 'left', fillColor: [44, 62, 80], textColor: [255, 255, 255] } },
+        { content: 'Fees', styles: { halign: 'left', fillColor: [44, 62, 80], textColor: [255, 255, 255] } }
       ]],
       body: results.map((item, index) => [
         { content: (index + 1).toString(), styles: { halign: 'center' } },
         { content: item.accountNumber, styles: { halign: 'left' } },
         { content: item.accountName, styles: { halign: 'left' } },
-        { content: Number(item.amount.toFixed(2)).toLocaleString('en-US'), styles: { halign: 'left' } },
-        { content: Number(item.commission.toFixed(2)).toLocaleString('en-US'), styles: { halign: 'left' } },
+        { content: formatPDFNumber(item.amount), styles: { halign: 'left' } },
+        { content: formatPDFNumber(item.commission), styles: { halign: 'left' } },
       ]),
+      foot: [[
+        { content: 'Total', colSpan: 3, styles: { halign: 'left', fontStyle: 'bold', fillColor: [44, 62, 80], textColor: [255, 255, 255] } },
+        { content: formatPDFNumber(totalAmount), styles: { halign: 'left', fontStyle: 'bold', fillColor: [44, 62, 80], textColor: [255, 255, 255] } },
+        { content: formatPDFNumber(totalCommission), styles: { halign: 'left', fontStyle: 'bold', fillColor: [44, 62, 80], textColor: [255, 255, 255] } },
+      ]],
       startY: tableStartY,
       margin: { left: sideMargin, right: sideMargin },
       theme: 'plain',
@@ -176,13 +182,6 @@ export function generatePDF({ results, totals, settings }: GeneratePDFParams): s
         3: { cellWidth: 24 },
         4: { cellWidth: 20 }
       },
-      foot: [[
-        { content: 'Total', styles: { halign: 'left', fontStyle: 'bold', fillColor: [44, 62, 80], textColor: [255, 255, 255] } },
-        { content: '', styles: { fillColor: [44, 62, 80], textColor: [255, 255, 255] } },
-        { content: '', styles: { fillColor: [44, 62, 80], textColor: [255, 255, 255] } },
-        { content: totals.totalAmount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }), styles: { halign: 'right', fontStyle: 'bold', fillColor: [44, 62, 80], textColor: [255, 255, 255] } },
-        { content: totals.totalCommission.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }), styles: { halign: 'right', fontStyle: 'bold', fillColor: [44, 62, 80], textColor: [255, 255, 255] } }
-      ]],
       showFoot: 'lastPage',
       pageBreak: 'auto',
       rowPageBreak: 'auto'

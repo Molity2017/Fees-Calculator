@@ -10,6 +10,11 @@ export default defineConfig({
     open: true
   },
   optimizeDeps: {
-    exclude: ['lucide-react'],
+    esbuildOptions: {
+      target: 'es2020'
+    }
   },
+  build: {
+    target: 'es2020'
+  }
 });

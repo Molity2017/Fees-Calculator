@@ -10,9 +10,9 @@ export function ExportButton({ onClick }: ExportButtonProps) {
   return (
     <button
       onClick={onClick}
-      className="px-6 py-3 bg-gradient-to-r from-purple-600 to-purple-800 text-white rounded-xl 
+      className="px-3 sm:px-6 py-2 sm:py-3 bg-gradient-to-r from-purple-600 to-purple-800 text-white rounded-xl 
                 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200
-                font-medium text-lg flex items-center gap-2 mx-auto"
+                font-medium text-xs sm:text-lg flex items-center gap-2 mx-auto"
     >
       <svg 
         className="w-5 h-5" 
