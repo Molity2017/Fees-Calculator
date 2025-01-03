@@ -1,4 +1,4 @@
-import { Moon } from 'lucide-react';
+import { Moon, Sun } from 'lucide-react';
 import { useLanguage } from '../hooks/useLanguage';
 
 interface ControlsProps {
@@ -20,9 +20,13 @@ export default function Controls({
           className="relative w-10 h-10 flex items-center justify-center rounded-full overflow-hidden group"
           aria-label="Toggle dark mode"
         >
-          <span className="absolute inset-0 bg-gradient-to-br from-blue-500/10 via-purple-500/10 to-pink-500/10 group-hover:from-blue-500/20 group-hover:via-purple-500/20 group-hover:to-pink-500/20 border border-blue-200/20 backdrop-blur-sm transition-all duration-300 group-hover:scale-105" />
+          <span className={`absolute inset-0 ${darkMode ? 'bg-gray-700' : 'bg-gray-100'} transition-colors duration-300`} />
           <span className="relative transition-transform duration-300 group-hover:rotate-[30deg]">
-            <Moon className="w-4 h-4" />
+            {darkMode ? (
+              <Sun className="w-5 h-5 text-yellow-400" />
+            ) : (
+              <Moon className="w-5 h-5 text-gray-600" />
+            )}
           </span>
         </button>
 
@@ -33,7 +37,7 @@ export default function Controls({
           className="relative min-w-[5rem] px-5 py-2 rounded-full overflow-hidden group"
           aria-label="Toggle language"
         >
-          <span className="absolute inset-0 bg-gradient-to-br from-blue-500/10 via-purple-500/10 to-pink-500/10 group-hover:from-blue-500/20 group-hover:via-purple-500/20 group-hover:to-pink-500/20 border border-blue-200/20 backdrop-blur-sm transition-all duration-300 group-hover:scale-105" />
+          <span className={`absolute inset-0 ${darkMode ? 'bg-gray-700' : 'bg-gray-100'} transition-colors duration-300`} />
           <span className="relative inline-block text-sm font-medium transition-transform duration-300 group-hover:scale-110">
             {language === 'ar' ? 'English' : 'عربي'}
           </span>

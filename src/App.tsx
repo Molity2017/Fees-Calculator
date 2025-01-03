@@ -215,15 +215,21 @@ function App() {
     }
   };
 
+  // تأثير لتحديث الوضع الليلي
+  useEffect(() => {
+    if (darkMode) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, [darkMode]);
+
   return (
-    <div dir={isRTL ? 'rtl' : 'ltr'} className={`min-h-screen ${darkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
-      <div className="max-w-[100%] md:max-w-[90%] lg:max-w-[85%] mx-auto p-4">
-        <div className={`bg-white ${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-lg shadow-lg p-6`}>
+    <div dir={isRTL ? 'rtl' : 'ltr'} className={`min-h-screen transition-colors duration-200 ${darkMode ? 'dark bg-gray-900' : 'bg-gray-50'}`}>
+      <div className={`max-w-[100%] md:max-w-[90%] lg:max-w-[85%] mx-auto p-4 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+        <div className={`rounded-lg shadow-lg p-6 ${darkMode ? 'bg-gray-800 border border-gray-700' : 'bg-white'}`}>
           <Header />
-          <Controls 
-            darkMode={darkMode}
-            onDarkModeChange={setDarkMode}
-          />
+          <Controls darkMode={darkMode} onDarkModeChange={setDarkMode} />
           <CommissionInputs
             percentage={percentage}
             fixedAmount={fixedAmount}
@@ -283,42 +289,40 @@ function App() {
           </div>
 
           <DeveloperButton />
-
-          {showModal && selectedResult && (
-            <ResultsModal
-              result={selectedResult}
-              onClose={() => setShowModal(false)}
-              percentage={percentage}
-              fixedAmount={fixedAmount}
-              minAmount={minAmount}
-              maxAmount={maxAmount}
-              isPercentageChecked={!!percentage}
-              isFixedAmountChecked={!!fixedAmount}
-              isMinAmountChecked={!!minAmount}
-              isMaxAmountChecked={!!maxAmount}
-            />
-          )}
-
-          {showPdfSettings && (
-            <PDFSettingsModal
-              initialSettings={pdfSettings}
-              onExport={(settings) => {
-                handleExportToPDF(settings);
-                setPdfSettings(settings);
-                setShowPdfSettings(false);
-              }}
-              onClose={() => setShowPdfSettings(false)}
-            />
-          )}
-
-          {errorMessage && (
-            <ErrorModal
-              message={errorMessage}
-              onClose={() => setErrorMessage('')}
-            />
-          )}
         </div>
       </div>
+
+      {showModal && selectedResult && (
+        <ResultsModal
+          result={selectedResult}
+          onClose={() => setShowModal(false)}
+          percentage={percentage}
+          fixedAmount={fixedAmount}
+          minAmount={minAmount}
+          maxAmount={maxAmount}
+          isPercentageChecked={!!percentage}
+          isFixedAmountChecked={!!fixedAmount}
+          isMinAmountChecked={!!minAmount}
+          isMaxAmountChecked={!!maxAmount}
+        />
+      )}
+      {showPdfSettings && (
+        <PDFSettingsModal
+          initialSettings={pdfSettings}
+          onExport={(settings) => {
+            handleExportToPDF(settings);
+            setPdfSettings(settings);
+            setShowPdfSettings(false);
+          }}
+          onClose={() => setShowPdfSettings(false)}
+        />
+      )}
+      {errorMessage && (
+        <ErrorModal
+          message={errorMessage}
+          onClose={() => setErrorMessage('')}
+        />
+      )}
     </div>
   );
 }

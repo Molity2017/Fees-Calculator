@@ -1,3 +1,42 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* تخصيص شريط التمرير */
+.results-container {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(156, 163, 175, 0.3) transparent;
+}
+
+.results-container::-webkit-scrollbar {
+  width: 8px;
+}
+
+.results-container::-webkit-scrollbar-track {
+  background: transparent;
+  border-radius: 8px;
+}
+
+.results-container::-webkit-scrollbar-thumb {
+  background-color: rgba(156, 163, 175, 0.3);
+  border-radius: 8px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+.results-container::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(156, 163, 175, 0.5);
+}
+
+/* تخصيص شريط التمرير في الوضع الليلي */
+.dark .results-container {
+  scrollbar-color: rgba(75, 85, 99, 0.5) transparent;
+}
+
+.dark .results-container::-webkit-scrollbar-thumb {
+  background-color: rgba(75, 85, 99, 0.5);
+}
+
+.dark .results-container::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(75, 85, 99, 0.7);
+}

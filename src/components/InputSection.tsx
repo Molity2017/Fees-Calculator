@@ -24,8 +24,10 @@ export function InputSection({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         onSelect={onSelect}
-        className="w-full p-4 border rounded-xl h-[200px] sm:h-[400px] focus:ring-2 focus:ring-blue-500 focus:border-blue-500 
-          bg-white border-gray-100 transition-colors"
+        className="w-full p-4 rounded-xl h-[200px] sm:h-[400px] focus:ring-2 focus:ring-blue-500 
+          dark:bg-gray-800 dark:border-gray-700 dark:text-white dark:focus:ring-blue-400
+          bg-gray-800/5 border border-gray-700/10 transition-colors duration-200
+          focus:outline-none resize-none"
         placeholder={placeholder}
         dir={isRTL ? 'rtl' : 'ltr'}
       />
